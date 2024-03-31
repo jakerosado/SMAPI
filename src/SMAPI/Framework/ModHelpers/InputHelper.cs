@@ -52,7 +52,7 @@ namespace StardewModdingAPI.Framework.ModHelpers
             this.CurrentInputState().OverrideButton(button, setDown: false);
         }
 
-        /// <summary>Set whether to suppress scroll wheel updates.</summary>
+        /// <inheritdoc />
         public void SuppressScrollWheel()
         {            
             Game1.oldMouseState = new MouseState(

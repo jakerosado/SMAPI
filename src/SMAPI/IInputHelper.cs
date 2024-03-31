@@ -20,8 +20,7 @@ namespace StardewModdingAPI
         /// <param name="button">The button to suppress.</param>
         void Suppress(SButton button);
 
-        /// <summary>Prevent the game from changing the scroll wheel value. <see cref="Events.IInputEvents.MouseWheelScrolled"/> will still fire.</summary>
-        /// <param name="isSuppressed"></param>
+        /// <summary>Suppress the immediate change to a scroll wheel value.</summary>
         void SuppressScrollWheel();
 
         /// <summary>Suppress the keybinds which are currently down.</summary>
