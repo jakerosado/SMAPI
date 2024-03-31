@@ -116,27 +116,6 @@ namespace StardewModdingAPI.Framework.Input
             }
         }
 
-        /// <summary>Suppresses scroll wheel changes by updating the old mouse state in the game loop.</summary>
-        private bool SuppressScrollWheelChanges(int currentScrollWheelValue)
-        {
-            bool hasChange = false;
-            if (currentScrollWheelValue != Game1.oldMouseState.ScrollWheelValue)
-            {
-                Game1.oldMouseState = new MouseState(
-                    x: Game1.oldMouseState.X,
-                    y: Game1.oldMouseState.Y,
-                    scrollWheel: currentScrollWheelValue,
-                    leftButton: Game1.oldMouseState.LeftButton,
-                    middleButton: Game1.oldMouseState.MiddleButton,
-                    rightButton: Game1.oldMouseState.RightButton,
-                    xButton1: Game1.oldMouseState.XButton1,
-                    xButton2: Game1.oldMouseState.XButton2
-                );
-                hasChange = true;
-            }
-            return hasChange;
-        }
-
         /// <summary>Get the gamepad state visible to the game.</summary>
         public override GamePadState GetGamePadState()
         {
