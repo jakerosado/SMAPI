@@ -29,9 +29,6 @@ namespace StardewModdingAPI.Framework.Input
         /// <summary>Whether there are new overrides in <see cref="CustomPressedKeys"/> or <see cref="CustomReleasedKeys"/> that haven't been applied to the previous state.</summary>
         private bool HasNewOverrides;
 
-        /// <summary>Whether the scroll wheel should have its old value updated during updates to suppress changes.</summary>
-        private bool IsScrollWheelSuppressed;
-
 
         /*********
         ** Accessors
@@ -105,8 +102,7 @@ namespace StardewModdingAPI.Framework.Input
                 this.HasNewOverrides = false;
                 this.ControllerState = controller.GetState();
                 this.KeyboardState = keyboard.GetState();
-                this.MouseState = mouse.GetState();                
-                this.SuppressScrollWheelChanges(this.MouseState.ScrollWheelValue);
+                this.MouseState = mouse.GetState();
                 this.ButtonStates = activeButtons;
                 if (cursorAbsolutePos != this.CursorPositionImpl.AbsolutePixels || playerTilePos != this.LastPlayerTile)
                 {
@@ -121,9 +117,10 @@ namespace StardewModdingAPI.Framework.Input
         }
 
         /// <summary>Suppresses scroll wheel changes by updating the old mouse state in the game loop.</summary>
-        private void SuppressScrollWheelChanges(int currentScrollWheelValue)
+        private bool SuppressScrollWheelChanges(int currentScrollWheelValue)
         {
-            if (this.IsScrollWheelSuppressed)
+            bool hasChange = false;
+            if (currentScrollWheelValue != Game1.oldMouseState.ScrollWheelValue)
             {
                 Game1.oldMouseState = new MouseState(
                     x: Game1.oldMouseState.X,
@@ -135,7 +132,9 @@ namespace StardewModdingAPI.Framework.Input
                     xButton1: Game1.oldMouseState.XButton1,
                     xButton2: Game1.oldMouseState.XButton2
                 );
+                hasChange = true;
             }
+            return hasChange;
         }
 
         /// <summary>Get the gamepad state visible to the game.</summary>
@@ -167,13 +166,6 @@ namespace StardewModdingAPI.Framework.Input
 
             if (changed)
                 this.HasNewOverrides = true;
-        }
-
-        /// <summary>Set whether to suppress scroll wheel changes</summary>
-        /// <param name="isSuppressed">Whether to suppress scroll wheel changes</param>
-        public void SuppressScrollWheel(bool isSuppressed)
-        {
-            this.IsScrollWheelSuppressed = isSuppressed;
         }
 
         /// <summary>Get whether a mod has indicated the key was already handled, so the game shouldn't handle it.</summary>
