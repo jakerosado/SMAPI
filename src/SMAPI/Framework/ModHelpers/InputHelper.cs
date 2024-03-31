@@ -56,14 +56,14 @@ namespace StardewModdingAPI.Framework.ModHelpers
         public void SuppressScrollWheel()
         {            
             Game1.oldMouseState = new MouseState(
-                x: this.CurrentInputState().MouseState.X,
-                y: this.CurrentInputState().MouseState.Y,
+                x: Game1.oldMouseState.X,
+                y: Game1.oldMouseState.Y,
                 scrollWheel: this.CurrentInputState().MouseState.ScrollWheelValue,
-                leftButton: this.CurrentInputState().MouseState.LeftButton,
-                middleButton: this.CurrentInputState().MouseState.MiddleButton,
-                rightButton: this.CurrentInputState().MouseState.RightButton,
-                xButton1: this.CurrentInputState().MouseState.XButton1,
-                xButton2: this.CurrentInputState().MouseState.XButton2
+                leftButton: Game1.oldMouseState.LeftButton,
+                middleButton: Game1.oldMouseState.MiddleButton,
+                rightButton: Game1.oldMouseState.RightButton,
+                xButton1: Game1.oldMouseState.XButton1,
+                xButton2: Game1.oldMouseState.XButton2
             );
         }
 
