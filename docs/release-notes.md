@@ -12,6 +12,7 @@
   * Fixed player sprites and building paint masks not always propagated on change.
 
 * For the web UI:
+  * Updated JSON validator for Content Patcher 2.1.0.
   * Fixed the log parser showing the wrong game folder path if the `Mods` folder path was customized.
   * Fixed JSON validator for Content Patcher showing incorrect errors for..
     * some valid `Entries`, `Fields`, `MapProperties`, `MapTiles`, and `When` field values;

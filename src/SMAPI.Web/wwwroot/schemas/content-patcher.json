@@ -14,9 +14,9 @@
             "title": "Format version",
             "description": "The format version. You should always use the latest version to enable the latest features, avoid obsolete behavior, and reduce load times.",
             "type": "string",
-            "pattern": "^2\\.0\\.[0-9]+$",
+            "pattern": "^2\\.1\\.[0-9]+$",
             "@errorMessages": {
-                "pattern": "Incorrect value '@value'. You should always use the latest format version (currently 2.0.0) to enable the latest features, avoid obsolete behavior, and reduce load times."
+                "pattern": "Incorrect value '@value'. You should always use the latest format version (currently 2.1.0) to enable the latest features, avoid obsolete behavior, and reduce load times."
             }
         },
         "ConfigSchema": {
@@ -189,6 +189,15 @@
                         },
                         "@errorMessages": {
                             "not": "Invalid target; it shouldn't include the 'Content/' folder, '.xnb' extension, or locale code."
+                        }
+                    },
+                    "TargetLocale": {
+                        "title": "Target locale",
+                        "description": "The locale code in the target asset's name to match (like 'fr-FR' to target `Characters/Dialogue/Abigail.fr-FR`), or an empty string to match only the base unlocalized asset, or omit to match all localized or unlocalized variants of the target asset.",
+                        "type": "string",
+                        "pattern": "^ *[a-zA-Z0-9_\\-]+ *$",
+                        "@errorMessages": {
+                            "pattern": "Invalid target locale; it should only contain alphanumeric, underscore, or dash characters."
                         }
                     },
                     "LogName": {
