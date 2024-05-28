@@ -5,7 +5,7 @@
 * For players:
   * Fixed installer not detecting Linux Flatpak install paths.
   * Fixed content issues for non-English players in recent builds (e.g. content packs not detecting the current festival correctly).
-  * Fixed pickled forage not shown by `list_items` console command.
+  * Fixed dried items, smoked items, and picked forage not handled by console commands like `list_items` or `player_add`.
 
 * For mod authors:
   * Updated dependencies, including...
