@@ -14,6 +14,10 @@
   * Fixed `content.Load` ignoring language override in recent SMAPI builds.
   * Fixed player sprites and building paint masks not always propagated on change.
 
+* For the update check server:
+  * Rewrote update checks for mods on CurseForge to use a new CurseForge API endpoint.  
+    _This should result in much faster update checks for CurseForge, and less chance of update-check errors when the CurseForge servers are under heavy load._
+
 * For the web UI:
   * Updated JSON validator for Content Patcher 2.1.0.
   * Fixed the log parser showing the wrong game folder path if the `Mods` folder path was customized.
