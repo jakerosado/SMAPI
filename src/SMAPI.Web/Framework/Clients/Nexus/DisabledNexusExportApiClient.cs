@@ -12,6 +12,12 @@ namespace StardewModdingAPI.Web.Framework.Clients.Nexus
         ** Public methods
         *********/
         /// <inheritdoc />
+        public Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        {
+            return Task.FromResult(DateTimeOffset.MinValue);
+        }
+
+        /// <inheritdoc />
         public Task<NexusFullExport> FetchExportAsync()
         {
             return Task.FromResult(

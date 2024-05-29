@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
@@ -18,15 +20,23 @@ namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
         ** Public methods
         *********/
         /// <inheritdoc />
+        [MemberNotNullWhen(true, nameof(CurseForgeExportCacheMemoryRepository.Data))]
         public bool IsLoaded()
         {
             return this.Data?.Mods.Count > 0;
         }
 
         /// <inheritdoc />
-        public DateTimeOffset? GetLastRefreshed()
+        public async Task<bool> CanRefreshFromAsync(ICurseForgeExportApiClient client, int staleMinutes)
         {
-            return this.Data?.LastModified;
+            DateTimeOffset serverLastModified = await client.FetchLastModifiedDateAsync();
+
+            return
+                !this.IsStale(serverLastModified, staleMinutes)
+                && (
+                    !this.IsLoaded()
+                    || this.Data.LastModified < serverLastModified
+                );
         }
 
         /// <inheritdoc />

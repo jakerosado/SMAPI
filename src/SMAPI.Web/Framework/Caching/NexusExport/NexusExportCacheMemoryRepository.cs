@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
@@ -18,15 +20,23 @@ namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
         ** Public methods
         *********/
         /// <inheritdoc />
+        [MemberNotNullWhen(true, nameof(NexusExportCacheMemoryRepository.Data))]
         public bool IsLoaded()
         {
             return this.Data?.Data.Count > 0;
         }
 
         /// <inheritdoc />
-        public DateTimeOffset? GetLastRefreshed()
+        public async Task<bool> CanRefreshFromAsync(INexusExportApiClient client, int staleMinutes)
         {
-            return this.Data?.LastUpdated;
+            DateTimeOffset serverLastModified = await client.FetchLastModifiedDateAsync();
+
+            return
+                !this.IsStale(serverLastModified, staleMinutes)
+                && (
+                    !this.IsLoaded()
+                    || this.Data.LastUpdated < serverLastModified
+                );
         }
 
         /// <inheritdoc />

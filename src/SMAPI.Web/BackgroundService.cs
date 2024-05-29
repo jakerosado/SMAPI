@@ -167,12 +167,17 @@ namespace StardewModdingAPI.Web
             if (!BackgroundService.IsStarted)
                 throw new InvalidOperationException($"Must call {nameof(BackgroundService.StartAsync)} before scheduling tasks.");
 
-            CurseForgeFullExport data = await BackgroundService.CurseForgeExportApiClient.FetchExportAsync();
-
             var cache = BackgroundService.CurseForgeExportCache;
-            cache.SetData(data);
+            var client = BackgroundService.CurseForgeExportApiClient;
+
+            if (await cache.CanRefreshFromAsync(client, BackgroundService.ExportStaleAge))
+            {
+                CurseForgeFullExport data = await client.FetchExportAsync();
+                cache.SetData(data);
+            }
+
             if (cache.IsStale(BackgroundService.ExportStaleAge))
-                cache.SetData(null); // if the export is too old, fetch fresh mod data from the site/API instead
+                cache.SetData(null); // if the export is too old, fetch fresh mod data from the API instead
         }
 
         /// <summary>Update the cached Nexus mod dump.</summary>
@@ -182,10 +187,15 @@ namespace StardewModdingAPI.Web
             if (!BackgroundService.IsStarted)
                 throw new InvalidOperationException($"Must call {nameof(BackgroundService.StartAsync)} before scheduling tasks.");
 
-            NexusFullExport data = await BackgroundService.NexusExportApiClient.FetchExportAsync();
-
             var cache = BackgroundService.NexusExportCache;
-            cache.SetData(data);
+            var client = BackgroundService.NexusExportApiClient;
+
+            if (await cache.CanRefreshFromAsync(client, BackgroundService.ExportStaleAge))
+            {
+                NexusFullExport data = await client.FetchExportAsync();
+                cache.SetData(data);
+            }
+
             if (cache.IsStale(BackgroundService.ExportStaleAge))
                 cache.SetData(null); // if the export is too old, fetch fresh mod data from the site/API instead
         }

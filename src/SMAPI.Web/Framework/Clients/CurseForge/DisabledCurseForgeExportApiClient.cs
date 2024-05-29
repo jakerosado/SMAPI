@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport.ResponseModels;
@@ -10,6 +11,12 @@ namespace StardewModdingAPI.Web.Framework.Clients.CurseForge
         /*********
         ** Public methods
         *********/
+        /// <inheritdoc />
+        public Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        {
+            return Task.FromResult(DateTimeOffset.MinValue);
+        }
+
         /// <inheritdoc />
         public Task<CurseForgeFullExport> FetchExportAsync()
         {

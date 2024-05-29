@@ -1,5 +1,6 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
@@ -13,8 +14,10 @@ namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
         /// <summary>Get whether the export data is currently available.</summary>
         bool IsLoaded();
 
-        /// <summary>Get when the export data was last fetched, or <c>null</c> if no data is currently available.</summary>
-        DateTimeOffset? GetLastRefreshed();
+        /// <summary>Get whether newer non-stale data can be fetched from the server.</summary>
+        /// <param name="client">The Nexus API client.</param>
+        /// <param name="staleMinutes">The age in minutes before data is considered stale.</param>
+        Task<bool> CanRefreshFromAsync(INexusExportApiClient client, int staleMinutes);
 
         /// <summary>Get the cached data for a mod, if it exists in the export.</summary>
         /// <param name="id">The Nexus mod ID.</param>
