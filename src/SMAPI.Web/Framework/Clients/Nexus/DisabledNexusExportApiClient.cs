@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport.ResponseModels;
 
@@ -12,21 +13,21 @@ namespace StardewModdingAPI.Web.Framework.Clients.Nexus
         ** Public methods
         *********/
         /// <inheritdoc />
-        public Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        public Task<ApiCacheHeaders> FetchCacheHeadersAsync()
         {
-            return Task.FromResult(DateTimeOffset.MinValue);
+            return Task.FromResult(
+                new ApiCacheHeaders(DateTimeOffset.MinValue, "immutable")
+            );
         }
 
         /// <inheritdoc />
-        public Task<NexusFullExport> FetchExportAsync()
+        public async Task<NexusFullExport> FetchExportAsync()
         {
-            return Task.FromResult(
-                new NexusFullExport
-                {
-                    Data = new(),
-                    LastUpdated = DateTimeOffset.UtcNow
-                }
-            );
+            return new NexusFullExport
+            {
+                Data = new(),
+                CacheHeaders = await this.FetchCacheHeadersAsync()
+            };
         }
 
         /// <inheritdoc />

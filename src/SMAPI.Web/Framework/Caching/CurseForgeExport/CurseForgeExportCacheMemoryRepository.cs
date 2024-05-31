@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
@@ -15,25 +16,32 @@ namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
 
 
         /*********
-        ** Public methods
+        ** Accessors
         *********/
         /// <inheritdoc />
         [MemberNotNullWhen(true, nameof(CurseForgeExportCacheMemoryRepository.Data))]
-        public override bool IsLoaded()
-        {
-            return this.Data?.Mods.Count > 0;
-        }
+        public override bool IsLoaded => this.Data?.Mods.Count > 0;
 
         /// <inheritdoc />
-        public override DateTimeOffset GetLastModified()
-        {
-            return this.Data?.LastModified ?? DateTimeOffset.MinValue;
-        }
+        public override ApiCacheHeaders? CacheHeaders => this.Data?.CacheHeaders;
 
+
+        /*********
+        ** Public methods
+        *********/
         /// <inheritdoc />
         public override void Clear()
         {
             this.SetData(null);
+        }
+
+        /// <inheritdoc />
+        public override void SetCacheHeaders(ApiCacheHeaders headers)
+        {
+            if (!this.IsLoaded)
+                throw new InvalidOperationException("Can't set the cache headers before any data is loaded.");
+
+            this.Data.CacheHeaders = headers;
         }
 
         /// <inheritdoc />

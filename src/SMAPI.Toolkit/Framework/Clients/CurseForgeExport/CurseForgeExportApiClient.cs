@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Pathoschild.Http.Client;
@@ -28,11 +27,10 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport
         }
 
         /// <inheritdoc />
-        public async Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        public async Task<ApiCacheHeaders> FetchCacheHeadersAsync()
         {
             IResponse response = await this.Client.SendAsync(HttpMethod.Head, "");
-
-            return this.ReadLastModified(response);
+            return ApiCacheHeaders.FromResponse(response);
         }
 
         /// <inheritdoc />
@@ -41,7 +39,7 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport
             IResponse response = await this.Client.GetAsync("");
 
             CurseForgeFullExport export = await response.As<CurseForgeFullExport>();
-            export.LastModified = this.ReadLastModified(response);
+            export.CacheHeaders = ApiCacheHeaders.FromResponse(response);
 
             return export;
         }
@@ -50,18 +48,6 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport
         public void Dispose()
         {
             this.Client.Dispose();
-        }
-
-
-        /*********
-        ** Private methods
-        *********/
-        /// <summary>Read the <c>Last-Modified</c> header from an API response.</summary>
-        /// <param name="response">The response from the CurseForge API.</param>
-        /// <exception cref="InvalidOperationException">The response doesn't include the required <c>Last-Modified</c> header.</exception>
-        private DateTimeOffset ReadLastModified(IResponse response)
-        {
-            return response.Message.Content.Headers.LastModified ?? throw new InvalidOperationException("Can't fetch from CurseForge export API: expected Last-Modified header wasn't set.");
         }
     }
 }

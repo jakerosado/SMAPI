@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
@@ -15,25 +16,32 @@ namespace StardewModdingAPI.Web.Framework.Caching.NexusExport
 
 
         /*********
-        ** Public methods
+        ** Accessors
         *********/
         /// <inheritdoc />
         [MemberNotNullWhen(true, nameof(NexusExportCacheMemoryRepository.Data))]
-        public override bool IsLoaded()
-        {
-            return this.Data?.Data.Count > 0;
-        }
+        public override bool IsLoaded => this.Data?.Data.Count > 0;
 
         /// <inheritdoc />
-        public override DateTimeOffset GetLastModified()
-        {
-            return this.Data?.LastUpdated ?? DateTimeOffset.MinValue;
-        }
+        public override ApiCacheHeaders? CacheHeaders => this.Data?.CacheHeaders;
 
+
+        /*********
+        ** Public methods
+        *********/
         /// <inheritdoc />
         public override void Clear()
         {
             this.SetData(null);
+        }
+
+        /// <inheritdoc />
+        public override void SetCacheHeaders(ApiCacheHeaders headers)
+        {
+            if (!this.IsLoaded)
+                throw new InvalidOperationException("Can't set the cache headers before any data is loaded.");
+
+            this.Data.CacheHeaders = headers;
         }
 
         /// <inheritdoc />

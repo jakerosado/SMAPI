@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Pathoschild.Http.Client;
@@ -28,11 +27,10 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.NexusExport
         }
 
         /// <inheritdoc />
-        public async Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        public async Task<ApiCacheHeaders> FetchCacheHeadersAsync()
         {
             IResponse response = await this.Client.SendAsync(HttpMethod.Head, "");
-
-            return this.ReadLastModified(response);
+            return ApiCacheHeaders.FromResponse(response);
         }
 
         /// <inheritdoc />
@@ -41,7 +39,7 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.NexusExport
             IResponse response = await this.Client.GetAsync("");
 
             NexusFullExport export = await response.As<NexusFullExport>();
-            export.LastUpdated = this.ReadLastModified(response);
+            export.CacheHeaders = ApiCacheHeaders.FromResponse(response);
 
             return export;
         }
@@ -50,18 +48,6 @@ namespace StardewModdingAPI.Toolkit.Framework.Clients.NexusExport
         public void Dispose()
         {
             this.Client.Dispose();
-        }
-
-
-        /*********
-        ** Private methods
-        *********/
-        /// <summary>Read the <c>Last-Modified</c> header from an API response.</summary>
-        /// <param name="response">The response from the Nexus API.</param>
-        /// <exception cref="InvalidOperationException">The response doesn't include the required <c>Last-Modified</c> header.</exception>
-        private DateTimeOffset ReadLastModified(IResponse response)
-        {
-            return response.Message.Content.Headers.LastModified ?? throw new InvalidOperationException("Can't fetch from Nexus export API: expected Last-Modified header wasn't set.");
         }
     }
 }

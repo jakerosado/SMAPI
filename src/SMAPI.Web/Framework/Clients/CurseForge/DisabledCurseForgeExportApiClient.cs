@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport.ResponseModels;
 
@@ -12,20 +13,21 @@ namespace StardewModdingAPI.Web.Framework.Clients.CurseForge
         ** Public methods
         *********/
         /// <inheritdoc />
-        public Task<DateTimeOffset> FetchLastModifiedDateAsync()
+        public Task<ApiCacheHeaders> FetchCacheHeadersAsync()
         {
-            return Task.FromResult(DateTimeOffset.MinValue);
+            return Task.FromResult(
+                new ApiCacheHeaders(DateTimeOffset.MinValue, "immutable")
+            );
         }
 
         /// <inheritdoc />
-        public Task<CurseForgeFullExport> FetchExportAsync()
+        public async Task<CurseForgeFullExport> FetchExportAsync()
         {
-            return Task.FromResult(
-                new CurseForgeFullExport
-                {
-                    Mods = new()
-                }
-            );
+            return new CurseForgeFullExport
+            {
+                Mods = new(),
+                CacheHeaders = await this.FetchCacheHeadersAsync()
+            };
         }
 
         /// <inheritdoc />

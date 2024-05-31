@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 
 namespace StardewModdingAPI.Web.Framework.Caching
 {
@@ -6,21 +8,31 @@ namespace StardewModdingAPI.Web.Framework.Caching
     internal abstract class BaseExportCacheRepository : BaseCacheRepository, IExportCacheRepository
     {
         /*********
-         ** Public methods
-         *********/
+        ** Accessors
+        *********/
         /// <inheritdoc />
-        public abstract bool IsLoaded();
+        [MemberNotNullWhen(true, nameof(BaseExportCacheRepository.CacheHeaders))]
+        public abstract bool IsLoaded { get; }
 
         /// <inheritdoc />
-        public abstract DateTimeOffset GetLastModified();
+        public abstract ApiCacheHeaders? CacheHeaders { get; }
 
+
+        /*********
+        ** Public methods
+        *********/
         /// <inheritdoc />
         public bool IsStale(int staleMinutes)
         {
-            return this.IsStale(this.GetLastModified(), staleMinutes);
+            return
+                this.IsLoaded
+                && this.IsStale(this.CacheHeaders.LastModified, staleMinutes);
         }
 
         /// <inheritdoc />
         public abstract void Clear();
+
+        /// <inheritdoc />
+        public abstract void SetCacheHeaders(ApiCacheHeaders headers);
     }
 }

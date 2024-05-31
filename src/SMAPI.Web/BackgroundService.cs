@@ -6,9 +6,11 @@ using Hangfire;
 using Hangfire.Console;
 using Hangfire.Server;
 using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using StardewModdingAPI.Toolkit;
+using StardewModdingAPI.Toolkit.Framework.Clients;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.NexusExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.Wiki;
@@ -177,8 +179,8 @@ namespace StardewModdingAPI.Web
                 context,
                 BackgroundService.CurseForgeExportCache!,
                 BackgroundService.CurseForgeExportApiClient!,
-                client => client.FetchLastModifiedDateAsync(),
-                async (cache, client) => cache.SetData(await client.FetchExportAsync())
+                fetchCacheHeadersAsync: client => client.FetchCacheHeadersAsync(),
+                fetchDataAsync: async (cache, client) => cache.SetData(await client.FetchExportAsync())
             );
         }
 
@@ -191,8 +193,8 @@ namespace StardewModdingAPI.Web
                 context,
                 BackgroundService.NexusExportCache!,
                 BackgroundService.NexusExportApiClient!,
-                client => client.FetchLastModifiedDateAsync(),
-                async (cache, client) => cache.SetData(await client.FetchExportAsync())
+                fetchCacheHeadersAsync: client => client.FetchCacheHeadersAsync(),
+                fetchDataAsync: async (cache, client) => cache.SetData(await client.FetchExportAsync())
             );
         }
 
@@ -228,25 +230,49 @@ namespace StardewModdingAPI.Web
         /// <param name="context">Information about the context in which the job is performed. This is injected automatically by Hangfire.</param>
         /// <param name="cache">The export cache to update.</param>
         /// <param name="client">The export API with which to fetch data from the remote API.</param>
-        /// <param name="fetchLastModifiedDateAsync">Fetch the date when the export on the server was last modified.</param>
+        /// <param name="fetchCacheHeadersAsync">Fetch the HTTP cache headers set by the remote API.</param>
         /// <param name="fetchDataAsync">Fetch the latest export file from the Nexus Mods export API.</param>
         /// <exception cref="InvalidOperationException">The <see cref="StartAsync"/> method wasn't called before running this task.</exception>
-        private static async Task UpdateExportAsync<TCacheRepository, TExportApiClient>(PerformContext? context, TCacheRepository cache, TExportApiClient client, Func<TExportApiClient, Task<DateTimeOffset>> fetchLastModifiedDateAsync, Func<TCacheRepository, TExportApiClient, Task> fetchDataAsync)
+        private static async Task UpdateExportAsync<TCacheRepository, TExportApiClient>(PerformContext? context, TCacheRepository cache, TExportApiClient client, Func<TExportApiClient, Task<ApiCacheHeaders>> fetchCacheHeadersAsync, Func<TCacheRepository, TExportApiClient, Task> fetchDataAsync)
             where TCacheRepository : IExportCacheRepository
         {
             if (!BackgroundService.IsStarted)
                 throw new InvalidOperationException($"Must call {nameof(BackgroundService.StartAsync)} before scheduling tasks.");
 
-            // refresh data
-            context.WriteLine("Checking if we can refresh the data...");
-            if (BackgroundService.CanRefreshFromExportApi(await fetchLastModifiedDateAsync(client), cache, out string? failReason))
+            // log initial state
+            context.WriteLine(cache.IsLoaded
+                ? $"The previous export is cached with data from {BackgroundService.FormatDateModified(cache.CacheHeaders.LastModified)}."
+                : "No previous export is cached."
+            );
+
+            // fetch cache headers
+            context.WriteLine("Fetching cache headers...");
+            ApiCacheHeaders serverCacheHeaders = await fetchCacheHeadersAsync(client);
+            DateTimeOffset serverModified = serverCacheHeaders.LastModified;
+            string serverEntityTag = serverCacheHeaders.EntityTag;
+
+            // update data
             {
-                context.WriteLine("Fetching data...");
-                await fetchDataAsync(cache, client);
-                context.WriteLine($"Cache updated. The data was last modified {BackgroundService.FormatDateModified(cache.GetLastModified())}.");
+                // skip if no update needed
+                if (cache.IsStale(serverModified, BackgroundService.ExportStaleAge))
+                    context.WriteLine($"Skipped data fetch: server was last modified {BackgroundService.FormatDateModified(serverModified)}, which exceeds the {BackgroundService.ExportStaleAge}-minute-stale limit.");
+                else if (cache.IsLoaded && cache.CacheHeaders.LastModified >= serverModified)
+                    context.WriteLine($"Skipped data fetch: server was last modified {BackgroundService.FormatDateModified(serverModified)}, which {(serverModified == cache.CacheHeaders.LastModified ? "matches" : "is older than")} our cached data.");
+
+                // update cache headers if data unchanged
+                else if (cache.IsLoaded && cache.CacheHeaders.EntityTag == serverEntityTag)
+                {
+                    context.WriteLine($"Skipped data fetch: server provided entity tag '{serverEntityTag}', which already matches the data we have.");
+                    cache.SetCacheHeaders(serverCacheHeaders);
+                }
+
+                // else update data
+                else
+                {
+                    context.WriteLine("Fetching data...");
+                    await fetchDataAsync(cache, client);
+                }
             }
-            else
-                context.WriteLine($"Skipped data fetch: {failReason}.");
 
             // clear if stale
             if (cache.IsStale(BackgroundService.ExportStaleAge))
@@ -255,40 +281,23 @@ namespace StardewModdingAPI.Web
                 cache.Clear();
             }
 
-            context.WriteLine("Done!");
-        }
-
-        /// <summary>Get whether newer non-stale data can be fetched from the server.</summary>
-        /// <param name="serverModified">The last-modified data from the remote API.</param>
-        /// <param name="repository">The repository to update.</param>
-        /// <param name="failReason">The reason to log if we can't fetch data.</param>
-        private static bool CanRefreshFromExportApi(DateTimeOffset serverModified, IExportCacheRepository repository, [NotNullWhen(false)] out string? failReason)
-        {
-            if (repository.IsStale(serverModified, BackgroundService.ExportStaleAge))
-            {
-                failReason = $"server was last modified {BackgroundService.FormatDateModified(serverModified)}, which exceeds the {BackgroundService.ExportStaleAge}-minute-stale limit";
-                return false;
-            }
-
-            if (repository.IsLoaded())
-            {
-                DateTimeOffset localModified = repository.GetLastModified();
-                if (localModified >= serverModified)
-                {
-                    failReason = $"server was last modified {BackgroundService.FormatDateModified(serverModified)}, which {(serverModified == localModified ? "matches our cached data" : $"is older than our cached {BackgroundService.FormatDateModified(localModified)}")}";
-                    return false;
-                }
-            }
-
-            failReason = null;
-            return true;
+            // log final result
+            context.WriteLine(cache.IsLoaded
+                ? $"Done! The export is currently cached with data from {BackgroundService.FormatDateModified(cache.CacheHeaders.LastModified)}."
+                : "Done! The export cache is currently disabled."
+            );
         }
 
         /// <summary>Format a 'date modified' value for the task logs.</summary>
         /// <param name="date">The date to log.</param>
-        private static string FormatDateModified(DateTimeOffset date)
+        private static string FormatDateModified(DateTimeOffset? date)
         {
-            return $"{date:O} (age: {(DateTimeOffset.UtcNow - date).Humanize()})";
+            if (!date.HasValue)
+                return "<null>";
+
+            string ageLabel = (DateTimeOffset.UtcNow - date.Value).Humanize(precision: 2, minUnit: TimeUnit.Minute, maxUnit: TimeUnit.Hour);
+
+            return $"{date.Value:O} (age: {ageLabel})";
         }
     }
 }
