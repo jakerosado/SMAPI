@@ -1,13 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport;
 using StardewModdingAPI.Toolkit.Framework.Clients.CurseForgeExport.ResponseModels;
 
 namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
 {
     /// <summary>Manages cached mod data from the CurseForge export API in-memory.</summary>
-    internal class CurseForgeExportCacheMemoryRepository : BaseCacheRepository, ICurseForgeExportCacheRepository
+    internal class CurseForgeExportCacheMemoryRepository : BaseExportCacheRepository, ICurseForgeExportCacheRepository
     {
         /*********
         ** Fields
@@ -21,22 +19,21 @@ namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
         *********/
         /// <inheritdoc />
         [MemberNotNullWhen(true, nameof(CurseForgeExportCacheMemoryRepository.Data))]
-        public bool IsLoaded()
+        public override bool IsLoaded()
         {
             return this.Data?.Mods.Count > 0;
         }
 
         /// <inheritdoc />
-        public async Task<bool> CanRefreshFromAsync(ICurseForgeExportApiClient client, int staleMinutes)
+        public override DateTimeOffset GetLastModified()
         {
-            DateTimeOffset serverLastModified = await client.FetchLastModifiedDateAsync();
+            return this.Data?.LastModified ?? DateTimeOffset.MinValue;
+        }
 
-            return
-                !this.IsStale(serverLastModified, staleMinutes)
-                && (
-                    !this.IsLoaded()
-                    || this.Data.LastModified < serverLastModified
-                );
+        /// <inheritdoc />
+        public override void Clear()
+        {
+            this.SetData(null);
         }
 
         /// <inheritdoc />
@@ -57,14 +54,6 @@ namespace StardewModdingAPI.Web.Framework.Caching.CurseForgeExport
         public void SetData(CurseForgeFullExport? export)
         {
             this.Data = export;
-        }
-
-        /// <inheritdoc />
-        public bool IsStale(int staleMinutes)
-        {
-            return
-                this.Data is null
-                || this.IsStale(this.Data.LastModified, staleMinutes);
         }
     }
 }
