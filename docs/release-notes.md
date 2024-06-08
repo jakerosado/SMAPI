@@ -20,7 +20,7 @@
     _This should result in much faster update checks for CurseForge, and less chance of update-check errors when the CurseForge servers are under heavy load._
 
 * For the web UI:
-  * Updated JSON validator for Content Patcher 2.1.0.
+  * Updated JSON validator for Content Patcher 2.1.0 and 2.2.0.
   * Fixed the log parser showing the wrong game folder path if the `Mods` folder path was customized.
   * Fixed JSON validator for Content Patcher showing incorrect errors for..
     * some valid `Entries`, `Fields`, `MapProperties`, `MapTiles`, and `When` field values;
