@@ -19,10 +19,13 @@
   * Rewrote update checks for mods on CurseForge to use a new CurseForge API endpoint.  
     _This should result in much faster update checks for CurseForge, and less chance of update-check errors when the CurseForge servers are under heavy load._
 
-* For the web UI:
-  * Updated JSON validator for Content Patcher 2.1.0 and 2.2.0.
-  * Fixed the log parser showing the wrong game folder path if the `Mods` folder path was customized.
-  * Fixed JSON validator for Content Patcher showing incorrect errors for..
+* For the log parser:
+  * Clicking a checkbox in the mod list now always only changes that checkbox, to allow hiding a single mod.
+  * Fixed the wrong game folder path shown if the `Mods` folder path was customized.
+
+* For the JSON validator:
+  * Updated for Content Patcher 2.1.0 and 2.2.0.
+  * Fixed incorrect errors shown for..
     * some valid `Entries`, `Fields`, `MapProperties`, `MapTiles`, and `When` field values;
     * `CustomLocations` entries which use the new [unique string ID](https://stardewvalleywiki.com/Modding:Common_data_field_types#Unique_string_ID) format;
     * `AddWarps` warps when a location name contains a dot.
