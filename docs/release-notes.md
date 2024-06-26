@@ -5,7 +5,9 @@
 * For players:
   * Fixed installer not detecting Linux Flatpak install paths.
   * Fixed content issues for non-English players in recent builds (e.g. content packs not detecting the current festival correctly).
-  * Fixed dried items, pickled forage, smoked fish, and specific bait not handled by console commands like `list_items` or `player_add`.
+  * Fixed console commands like `list_items` or `player_add`...
+    * not handling dried items, pickled forage, smoked fish, and specific bait correctly.
+    * listing some flooring & wallpaper items twice.
   * Fixed dependencies on transparently obsolete mods not ignored in some cases.
   * Updated mod compatibility list.
 
