@@ -8,10 +8,11 @@
   * Removed confusing "Found X mods with warnings:" prefix before listing categories.
   * Fixed installer not detecting Linux Flatpak install paths.
   * Fixed content issues for non-English players in recent builds (e.g. content packs not detecting the current festival correctly).
-  * Fixed console commands like `list_items` or `player_add`...
-    * not handling dried items, pickled forage, smoked fish, and specific bait correctly.
-    * listing some flooring & wallpaper items twice.
   * Fixed dependencies on transparently obsolete mods not ignored in some cases.
+  * Fixed issues in Console Commands:
+    * Fixed `list_items` & `player_add` not handling dried items, pickled forage, smoked fish, and specific bait correctly.
+    * Fixed `list_items` & `player_add` listing some flooring & wallpaper items twice.
+    * Fixed `show_data_files` & `show_game_files` no longer working correctly (thanks to jakerosado!).
   * Updated mod compatibility list.
 
 * For mod authors:
